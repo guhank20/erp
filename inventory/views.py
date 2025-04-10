@@ -12,6 +12,9 @@ from inventory.models import Inventory
 from inventory.serializers import InventorySerializer
 from inventory.service import create_inventory, update_inventory, delete_inventory
 from rest_framework.permissions import IsAuthenticated
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class WarehouseListCreateView(APIView):
@@ -32,6 +35,9 @@ class InventoryViewSet(viewsets.ModelViewSet):
     serializer_class = InventorySerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Inventory.objects.filter(active=True)
+
     def perform_create(self, serializer):
         try:
             validated_data = serializer.validated_data
@@ -45,6 +51,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
             instance = self.get_object()
             validated_data = serializer.validated_data
             updated = update_inventory(instance, validated_data)
+           
             serializer.instance = updated
         except ValidationError as e:
             raise DRFValidationError(e)

@@ -15,7 +15,7 @@ class InventorySerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Inventory
-        fields = ['id', 'uuid','product_name', 'quantity','category', 'warehouse', 'warehouse_id', 'price','available_qty','threshold']
+        fields = ['id', 'uuid','product_name', 'quantity','category', 'warehouse', 'warehouse_id', 'price','available_qty','threshold','active']
 
 class MinimalInventorySerializer(serializers.ModelSerializer):
     class Meta:

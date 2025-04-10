@@ -12,12 +12,13 @@ def get_warehouse_by_id(warehouse_id):
 
 
 def validate_inventory_data(data):
+    product_name = data.get('product_name')
     # Example: Ensure quantity is not negative
     if data.get('quantity', 0) < 0:
         raise ValidationError("Quantity cannot be negative.")
 
     # Example: Product name should be unique (if not using serializer to enforce)
-    if Inventory.objects.filter(product_name=data['product_name']).exists():
+    if product_name and Inventory.objects.filter(product_name=data['product_name']).exists():
         raise ValidationError("Product name must be unique.")
 
     return data
@@ -29,8 +30,9 @@ def create_inventory(data):
 
 
 def update_inventory(instance, data):
-    if 'product_name' in data and data['product_name'] != instance.product_name:
-        if Inventory.objects.filter(product_name=data['product_name']).exclude(id=instance.id).exists():
+    product_name = data.get('product_name')
+    if product_name and product_name != instance.product_name:
+        if Inventory.objects.filter(product_name=product_name).exclude(id=instance.id).exists():
             raise ValidationError("Product name must be unique.")
     
     validate_inventory_data(data)

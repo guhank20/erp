@@ -22,6 +22,7 @@ class Inventory(BaseModel):
     price = models.IntegerField(blank=False, default=0)
     available_qty = models.IntegerField(blank=False, default=0)
     threshold = models.IntegerField(blank=False, default=0)
+    active = models.BooleanField(default=True)
     class Meta:
         db_table = 'inventory'
 
