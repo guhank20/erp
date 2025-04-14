@@ -1,5 +1,7 @@
-from .models import Warehouse, Inventory
+from .models import Warehouse, Inventory, TransactionItem
 from django.core.exceptions import ValidationError
+from .serializers import TransactionItemSerializer
+from django.contrib.contenttypes.models import ContentType
 
 def create_warehouse(data):
     return Warehouse.objects.create(**data)
@@ -44,3 +46,19 @@ def update_inventory(instance, data):
 
 def delete_inventory(instance):
     instance.delete()
+
+def transaction_items(request):
+    product_id = request.GET.get('product_id')
+    filter_type = request.GET.get('filter_type')  # e.g., 'sale', 'purchase'
+
+    queryset = TransactionItem.objects.all()
+
+    if product_id:
+        queryset = queryset.filter(product_id=product_id)
+
+    if filter_type:
+        content_type = ContentType.objects.get(model=filter_type)
+        queryset = queryset.filter(content_type=content_type)
+        
+    serializer = TransactionItemSerializer(queryset, many=True)
+    return serializer.data

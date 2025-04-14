@@ -4,13 +4,14 @@ from .serializers import WarehouseSerializer
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from . import service
+from rest_framework.decorators import api_view
 
 from django.core.exceptions import ValidationError
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from inventory.models import Inventory
 from inventory.serializers import InventorySerializer
-from inventory.service import create_inventory, update_inventory, delete_inventory
+from inventory.service import create_inventory, update_inventory, delete_inventory, transaction_items
 from rest_framework.permissions import IsAuthenticated
 import logging
 
@@ -58,3 +59,10 @@ class InventoryViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         delete_inventory(instance)
+
+@api_view(['GET'])
+def transaction_item_list_view(request):
+    logger.info('transaction list')
+    logger.info(request.data)
+    data = transaction_items(request)
+    return Response(data)
