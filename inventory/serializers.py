@@ -22,13 +22,20 @@ class MinimalInventorySerializer(serializers.ModelSerializer):
         model = Inventory
         fields = ['id', 'uuid', 'product_name']
 
+
 class TransactionItemSerializer(serializers.ModelSerializer):
     product = MinimalInventorySerializer(read_only=True)
+    product_id = serializers.PrimaryKeyRelatedField(
+        queryset=Inventory.objects.all(),
+        source='product',
+        write_only=True
+    )
+    product_name = serializers.CharField(source='product.product_name', read_only=True)
     content_type = serializers.SerializerMethodField()
 
     class Meta:
         model = TransactionItem
-        fields = ['id', 'product', 'quantity', 'per_price', 'price', 'content_type']
+        fields = ['id', 'product', 'product_id', 'product_name', 'quantity', 'per_price', 'price', 'content_type']
 
     def get_content_type(self, obj):
         return obj.content_type.model
