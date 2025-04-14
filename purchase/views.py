@@ -14,11 +14,8 @@ class PurchaseViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request):
-        logger.info(f"view Creating Purchase: {request.data}")
         serializer = PurchaseSerializer(data=request.data)
-        #logger.info(f"view after serilizer  Purchase: {serializer.validated_data}")
         serializer.is_valid(raise_exception=True)
-        logger.info(f"view after serilizer  Purchase: {serializer.validated_data}")
         sale = create_purchase(serializer.validated_data)
         return Response(PurchaseSerializer(sale).data, status=status.HTTP_201_CREATED)
 

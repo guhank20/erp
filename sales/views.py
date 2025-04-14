@@ -14,11 +14,8 @@ class SalesViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request):
-        logger.info(f"view Creating sales: {request.data}")
         serializer = SalesSerializer(data=request.data)
-        #logger.info(f"view after serilizer  sales: {serializer.validated_data}")
         serializer.is_valid(raise_exception=True)
-        logger.info(f"view after serilizer  sales: {serializer.validated_data}")
         sale = create_sales(serializer.validated_data)
         return Response(SalesSerializer(sale).data, status=status.HTTP_201_CREATED)
 

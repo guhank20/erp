@@ -7,13 +7,11 @@ logger = logging.getLogger(__name__)
 
 def create_sales(data):
     items_data = data.pop('item_inputs', [])
-    logger.info(f"Creating sales: {data}")
     sale = Sales.objects.create(**data)
     content_type = ContentType.objects.get_for_model(Sales)
 
     for item in items_data:
         try:
-            logger.info(f"Creating TransactionItem: {item}")
             TransactionItem.objects.create(
                 content_type=content_type,
                 object_id=sale.id,

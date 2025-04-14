@@ -2,6 +2,13 @@ from .models import Warehouse, Inventory, TransactionItem
 from django.core.exceptions import ValidationError
 from .serializers import TransactionItemSerializer
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.pagination import PageNumberPagination
+import logging
+from rest_framework.response import Response
+from rest_framework import status
+
+# Create a logger
+logger = logging.getLogger(__name__)
 
 def create_warehouse(data):
     return Warehouse.objects.create(**data)
@@ -59,6 +66,19 @@ def transaction_items(request):
     if filter_type:
         content_type = ContentType.objects.get(model=filter_type)
         queryset = queryset.filter(content_type=content_type)
-        
-    serializer = TransactionItemSerializer(queryset, many=True)
-    return serializer.data
+
+    page_size = request.GET.get('page_size', 10)  # Default to 10 if not specified
+    try:
+        page_size = int(page_size)  # Ensure it's an integer
+    except ValueError:
+        page_size = 10
+    queryset = queryset.order_by('id')
+    logger.error(f"Invalid content type: {filter_type}")
+    logger.error(f"Invalid query: {queryset}")
+    paginator = PageNumberPagination()
+    paginator.page_size = page_size
+    result_page = paginator.paginate_queryset(queryset, request)
+
+    serializer = TransactionItemSerializer(result_page, many=True)
+    result =  paginator.get_paginated_response(serializer.data)
+    return result.data

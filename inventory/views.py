@@ -62,7 +62,6 @@ class InventoryViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET'])
 def transaction_item_list_view(request):
-    logger.info('transaction list')
-    logger.info(request.data)
     data = transaction_items(request)
+    #data = {"message": "Hello, World!"}
     return Response(data)
