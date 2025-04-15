@@ -3,6 +3,11 @@ from users.models import BaseModel
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from decimal import Decimal
+from django.core.exceptions import ValidationError
+from django.db.models import Sum
+from purchase.models import Purchase
+from sales.models import Sales
+import threading
 
 # Create your models here.
 
@@ -43,6 +48,66 @@ class TransactionItem(models.Model):
         if self.quantity and self.per_price is not None:
             self.price = Decimal(self.quantity) * self.per_price
         super().save(*args, **kwargs)
+
+    @classmethod
+    def create_transaction_items(cls, data, content_type_model, ref_id):
+        content_type = ContentType.objects.get_for_model(content_type_model)
+        success = False
+        for item in data:
+            if item['product_id']:
+                try:
+                    isCreate = False
+                    if content_type_model == Sales:
+                        thread_sales = threading.Thread(target=cls.get_product_credit, args=(item['product_id'],Sales,))
+                        thread_purchase = threading.Thread(target=cls.get_product_credit, args=(item['product_id'],Purchase,))
+                        thread_sales.start()
+                        thread_purchase.start()
+
+                        thread_sales.join()
+                        thread_purchase.join()
+                    else:
+                        isCreate = True
+                    if isCreate:
+                        cls.objects.create(
+                            content_type=content_type,
+                            object_id=ref_id,
+                            **item
+                        )
+                        success = True
+                except ValidationError as e:
+                    success = False
+                except Exception as e:
+                    success = False
+        return success
+    
+    @classmethod
+    def get_product_credit(cls,product_id,content_type_model):
+        if content_type_model is None:
+            content_type_model = Purchase
+        
+        result = cls.objects.filter(
+            product_id=product_id,
+            content_type=content_type_model
+        ).aggregate(total_qty=Sum('quantity'))
+
+        return result['total_qty'] or 0
+    
+    @classmethod
+    def get_product_debit(cls,product_id,content_type_model):
+        if content_type_model is None:
+            content_type_model = Sales
+        
+        result = cls.objects.filter(
+            product_id=product_id,
+            content_type=content_type_model
+        ).aggregate(total_qty=Sum('quantity'))
+
+        return result['total_qty'] or 0
+    
+
+
+
+
 
 
 

@@ -82,3 +82,6 @@ def transaction_items(request):
     serializer = TransactionItemSerializer(result_page, many=True)
     result =  paginator.get_paginated_response(serializer.data)
     return result.data
+
+def create_transaction_item(data,content_type,ref_id):
+    return TransactionItem.create_transaction_items(data,content_type,ref_id)
